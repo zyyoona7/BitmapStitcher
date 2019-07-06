@@ -9,6 +9,7 @@ import android.graphics.PorterDuffXfermode;
 import android.graphics.Rect;
 
 import androidx.annotation.ColorInt;
+import androidx.annotation.IntRange;
 import androidx.annotation.Nullable;
 import androidx.annotation.WorkerThread;
 
@@ -16,9 +17,11 @@ import com.zyyoona7.stitcher.engine.SizeEngine;
 import com.zyyoona7.stitcher.engine.StitcherEngine;
 import com.zyyoona7.stitcher.util.StitcherUtils;
 
+import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.OutputStream;
 import java.util.List;
 
 /**
@@ -222,12 +225,56 @@ public class BitmapStitcher {
      * @param bitmap   bitmap
      * @param filePath 输出文件路径
      * @param format   转换类型
-     * @param quality  压缩质量
+     * @return true if successfully
      */
     @WorkerThread
-    public static void save(Bitmap bitmap, String filePath,
-                            Bitmap.CompressFormat format, int quality) {
-        save(bitmap, new File(filePath), format, quality);
+    public static boolean save(Bitmap bitmap, String filePath, Bitmap.CompressFormat format) {
+        return save(bitmap, filePath, format, 100);
+    }
+
+    /**
+     * 保存到本地
+     *
+     * @param bitmap   bitmap
+     * @param filePath 输出文件路径
+     * @param format   转换类型
+     * @param quality  压缩质量
+     * @return true if successfully
+     */
+    @WorkerThread
+    public static boolean save(Bitmap bitmap, String filePath,
+                               Bitmap.CompressFormat format, @IntRange(from = 0, to = 100) int quality) {
+        return save(bitmap, filePath, format, quality, true);
+    }
+
+    /**
+     * 保存到本地
+     *
+     * @param bitmap    bitmap
+     * @param filePath  输出文件路径
+     * @param format    转换类型
+     * @param quality   压缩质量
+     * @param isRecycle 是否回收
+     * @return true if successfully
+     */
+    @WorkerThread
+    public static boolean save(Bitmap bitmap, String filePath,
+                               Bitmap.CompressFormat format,
+                               @IntRange(from = 0, to = 100) int quality, boolean isRecycle) {
+        return save(bitmap, new File(filePath), format, quality, isRecycle);
+    }
+
+    /**
+     * 保存到本地
+     *
+     * @param bitmap     bitmap
+     * @param outputFile 输出文件
+     * @param format     转换类型
+     * @return true if successfully
+     */
+    @WorkerThread
+    public static boolean save(Bitmap bitmap, File outputFile, Bitmap.CompressFormat format) {
+        return save(bitmap, outputFile, format, 100);
     }
 
     /**
@@ -237,28 +284,165 @@ public class BitmapStitcher {
      * @param outputFile 输出文件
      * @param format     转换类型
      * @param quality    压缩质量
+     * @return true if successfully
      */
     @WorkerThread
-    public static void save(Bitmap bitmap, File outputFile,
-                            Bitmap.CompressFormat format, int quality) {
+    public static boolean save(Bitmap bitmap, File outputFile,
+                               Bitmap.CompressFormat format, @IntRange(from = 0, to = 100) int quality) {
+        return save(bitmap, outputFile, format, quality, true);
+    }
+
+    /**
+     * 保存到本地
+     *
+     * @param bitmap     bitmap
+     * @param outputFile 输出文件
+     * @param format     转换类型
+     * @param quality    压缩质量
+     * @param isRecycle  是否回收
+     * @return true if successfully
+     */
+    @WorkerThread
+    public static boolean save(Bitmap bitmap, File outputFile,
+                               Bitmap.CompressFormat format,
+                               @IntRange(from = 0, to = 100) int quality, boolean isRecycle) {
         if (StitcherUtils.isEmptyBitmap(bitmap)) {
-            return;
+            return false;
         }
-        FileOutputStream fileOutputStream = null;
+        OutputStream outputStream = null;
         try {
-            fileOutputStream = new FileOutputStream(outputFile);
-            bitmap.compress(format, quality, fileOutputStream);
+            outputStream = new BufferedOutputStream(new FileOutputStream(outputFile));
+            boolean success = bitmap.compress(format, quality, outputStream);
+            if (isRecycle && !bitmap.isRecycled()) bitmap.recycle();
+            return success;
         } catch (Exception e) {
             e.printStackTrace();
         } finally {
-            if (fileOutputStream != null) {
+            if (outputStream != null) {
                 try {
-                    fileOutputStream.close();
+                    outputStream.close();
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
             }
         }
+        return false;
+    }
+
+    /**
+     * 保存到本地
+     *
+     * @param bitmap   bitmap
+     * @param filePath 输出文件路径
+     * @param format   转换类型
+     * @return output file if null save bitmap failed.
+     */
+    @WorkerThread
+    @Nullable
+    public static File saveBitmap(Bitmap bitmap, String filePath, Bitmap.CompressFormat format) {
+        return saveBitmap(bitmap, filePath, format, 100);
+    }
+
+    /**
+     * 保存到本地
+     *
+     * @param bitmap   bitmap
+     * @param filePath 输出文件路径
+     * @param format   转换类型
+     * @param quality  压缩质量
+     * @return output file if null save bitmap failed.
+     */
+    @WorkerThread
+    @Nullable
+    public static File saveBitmap(Bitmap bitmap, String filePath,
+                                  Bitmap.CompressFormat format, @IntRange(from = 0, to = 100) int quality) {
+        return saveBitmap(bitmap, filePath, format, quality, true);
+    }
+
+    /**
+     * 保存到本地
+     *
+     * @param bitmap    bitmap
+     * @param filePath  输出文件路径
+     * @param format    转换类型
+     * @param quality   压缩质量
+     * @param isRecycle 是否回收
+     * @return output file if null save bitmap failed.
+     */
+    @WorkerThread
+    @Nullable
+    public static File saveBitmap(Bitmap bitmap, String filePath,
+                                  Bitmap.CompressFormat format,
+                                  @IntRange(from = 0, to = 100) int quality, boolean isRecycle) {
+        return saveBitmap(bitmap, new File(filePath), format, quality, isRecycle);
+    }
+
+    /**
+     * 保存到本地
+     *
+     * @param bitmap     bitmap
+     * @param outputFile 输出文件
+     * @param format     转换类型
+     * @return output file if null save bitmap failed.
+     */
+    @WorkerThread
+    @Nullable
+    public static File saveBitmap(Bitmap bitmap, File outputFile, Bitmap.CompressFormat format) {
+        return saveBitmap(bitmap, outputFile, format, 100);
+    }
+
+    /**
+     * 保存到本地
+     *
+     * @param bitmap     bitmap
+     * @param outputFile 输出文件
+     * @param format     转换类型
+     * @param quality    压缩质量
+     * @return output file if null save bitmap failed.
+     */
+    @WorkerThread
+    @Nullable
+    public static File saveBitmap(Bitmap bitmap, File outputFile,
+                                  Bitmap.CompressFormat format, @IntRange(from = 0, to = 100) int quality) {
+        return saveBitmap(bitmap, outputFile, format, quality, true);
+    }
+
+    /**
+     * 保存到本地
+     *
+     * @param bitmap     bitmap
+     * @param outputFile 输出文件
+     * @param format     转换类型
+     * @param quality    压缩质量
+     * @param isRecycle  是否回收
+     * @return output file if null save bitmap failed.
+     */
+    @WorkerThread
+    @Nullable
+    public static File saveBitmap(Bitmap bitmap, File outputFile,
+                                  Bitmap.CompressFormat format,
+                                  @IntRange(from = 0, to = 100) int quality, boolean isRecycle) {
+        if (StitcherUtils.isEmptyBitmap(bitmap)) {
+            return null;
+        }
+        OutputStream outputStream = null;
+        try {
+            outputStream = new BufferedOutputStream(new FileOutputStream(outputFile));
+            boolean success = bitmap.compress(format, quality, outputStream);
+            if (isRecycle && !bitmap.isRecycled()) bitmap.recycle();
+            return success ? outputFile : null;
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            if (outputStream != null) {
+                try {
+                    outputStream.close();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+        return null;
     }
 
     /*
@@ -385,7 +569,7 @@ public class BitmapStitcher {
         final Paint paint = new Paint(Paint.ANTI_ALIAS_FLAG);
         final Rect destRect = new Rect(0, 0, src.getWidth(), src.getHeight());
 
-        canvas.drawARGB(0,0,0,0);
+        canvas.drawARGB(0, 0, 0, 0);
         try {
             int radius = minSize / 2;
             canvas.drawCircle(src.getWidth() / 2, src.getHeight() / 2, radius, paint);
@@ -394,7 +578,7 @@ public class BitmapStitcher {
         } catch (Exception e) {
             return null;
         } finally {
-            if (!src.isRecycled() && src!=output) {
+            if (!src.isRecycled() && src != output) {
                 src.recycle();
             }
         }

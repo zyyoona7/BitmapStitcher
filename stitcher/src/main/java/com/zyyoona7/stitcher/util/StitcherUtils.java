@@ -87,6 +87,8 @@ public class StitcherUtils {
                 case ExifInterface.ORIENTATION_ROTATE_270:
                     degree = 270;
                     break;
+                default:
+                    degree = 0;
             }
         } catch (IOException e) {
             e.printStackTrace();

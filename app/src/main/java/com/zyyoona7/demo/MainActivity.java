@@ -132,7 +132,7 @@ public class MainActivity extends AppCompatActivity {
                 //垂直多图
                 List<String> pathList = Matisse.obtainPathResult(data);
                 if (pathList.size() > 0) {
-                    stitchVerticalMulti(pathList, true);
+                    stitchVerticalMulti(pathList, false);
                 }
             }else if (requestCode==REQUEST_CODE_HOR_MULTI){
                 //水平多图
@@ -158,7 +158,8 @@ public class MainActivity extends AppCompatActivity {
             Bitmap clipBitmap = isClip ? BitmapStitcher.clipYFromCenter(bitmap, 1920) : bitmap;
 
             FileUtils.delete(outputPath);
-            BitmapStitcher.save(clipBitmap, outputPath, Bitmap.CompressFormat.PNG, 100);
+            LogUtils.d("stitchVerticalMulti bitmap success");
+            BitmapStitcher.save(clipBitmap, outputPath, Bitmap.CompressFormat.JPEG, 50);
             LogUtils.d("stitchVerticalMulti success...");
         }, () -> {
             mLoadingGroup.setVisibility(View.GONE);
@@ -182,6 +183,7 @@ public class MainActivity extends AppCompatActivity {
             Bitmap bitmap = BitmapStitcher.stitchHorizontal(pathList, 1920,
                     ConvertUtils.dp2px(20), Color.WHITE);
             FileUtils.delete(outputPath);
+            LogUtils.d("stitchHorizontalMulti bitmap success");
             BitmapStitcher.save(bitmap, outputPath, Bitmap.CompressFormat.PNG, 100);
             LogUtils.d("stitchHorizontalMulti success...");
         }, () -> {
@@ -208,6 +210,7 @@ public class MainActivity extends AppCompatActivity {
             Bitmap clipBitmap = isClip ? BitmapStitcher.clipToCircle(bitmap) : bitmap;
 
             FileUtils.delete(outputPath);
+            LogUtils.d("stitchVerticalSingle bitmap success");
             BitmapStitcher.save(clipBitmap, outputPath, Bitmap.CompressFormat.PNG, 100);
             LogUtils.d("stitchVerticalSingle success...");
         }, () -> {
@@ -231,6 +234,7 @@ public class MainActivity extends AppCompatActivity {
             Bitmap bitmap = BitmapStitcher.stitchHorizontal(filePath, 3, 1920,
                     ConvertUtils.dp2px(15), Color.BLACK);
             FileUtils.delete(outputPath);
+            LogUtils.d("stitchHorizontalSingle bitmap success");
             BitmapStitcher.save(bitmap, outputPath, Bitmap.CompressFormat.PNG, 100);
             LogUtils.d("stitchHorizontalSingle success...");
         }, () -> {
