@@ -19,6 +19,8 @@ import java.util.List;
  * 图片拼接的引擎
  */
 public class StitcherEngine {
+    //创建 Bitmap 大小的阈值，如果宽高超过这个值则 Config 使用 RGB_565 减少开销
+    private static final int CONFIG_THRESHOLD = 4000 * 4000;
 
     /**
      * 垂直方向排列多张图片拼接
@@ -40,7 +42,7 @@ public class StitcherEngine {
         }
 
         Bitmap destBitmap = Bitmap.createBitmap(size.getWidth(), size.getHeight(),
-                Bitmap.Config.ARGB_8888);
+                getConfigBySize(size.getWidth(),size.getHeight()));
         Canvas canvas = createCanvas(destBitmap);
         Paint paint = createPaint();
         if (fillColor != Color.TRANSPARENT) {
@@ -109,7 +111,7 @@ public class StitcherEngine {
         }
 
         Bitmap destBitmap = Bitmap.createBitmap(size.getWidth(), size.getHeight(),
-                Bitmap.Config.ARGB_8888);
+                getConfigBySize(size.getWidth(),size.getHeight()));
         Canvas canvas = createCanvas(destBitmap);
         Paint paint = createPaint();
         if (fillColor != Color.TRANSPARENT) {
@@ -176,7 +178,7 @@ public class StitcherEngine {
         }
 
         Bitmap destBitmap = Bitmap.createBitmap(size.getWidth(), size.getHeight(),
-                Bitmap.Config.ARGB_8888);
+                getConfigBySize(size.getWidth(),size.getHeight()));
         Canvas canvas = createCanvas(destBitmap);
         Paint paint = createPaint();
         if (fillColor != Color.TRANSPARENT) {
@@ -245,7 +247,7 @@ public class StitcherEngine {
         }
 
         Bitmap destBitmap = Bitmap.createBitmap(size.getWidth(), size.getHeight(),
-                Bitmap.Config.ARGB_8888);
+                getConfigBySize(size.getWidth(),size.getHeight()));
         Canvas canvas = createCanvas(destBitmap);
         Paint paint = createPaint();
         if (fillColor != Color.TRANSPARENT) {
@@ -304,5 +306,20 @@ public class StitcherEngine {
 
     private static Canvas createCanvas(Bitmap bitmap) {
         return new Canvas(bitmap);
+    }
+
+    /**
+     * 根据大小获取 config
+     *
+     * @param width  创建 Bitmap 的宽
+     * @param height 创建 Bitmap 的高
+     * @return Bitmap config ARGB_8888 or RGB_565
+     */
+    private static Bitmap.Config getConfigBySize(int width, int height) {
+        if (width * height > CONFIG_THRESHOLD) {
+            return Bitmap.Config.RGB_565;
+        } else {
+            return Bitmap.Config.ARGB_8888;
+        }
     }
 }
