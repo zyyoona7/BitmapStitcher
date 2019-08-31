@@ -7,6 +7,7 @@ import android.graphics.Paint;
 import android.graphics.PorterDuff;
 import android.graphics.PorterDuffXfermode;
 import android.graphics.Rect;
+import android.graphics.RectF;
 
 import androidx.annotation.ColorInt;
 import androidx.annotation.IntRange;
@@ -15,6 +16,7 @@ import androidx.annotation.WorkerThread;
 
 import com.zyyoona7.stitcher.engine.SizeEngine;
 import com.zyyoona7.stitcher.engine.StitcherEngine;
+import com.zyyoona7.stitcher.util.ReusableCache;
 import com.zyyoona7.stitcher.util.StitcherUtils;
 
 import java.io.BufferedOutputStream;
@@ -564,9 +566,9 @@ public class BitmapStitcher {
             return null;
         }
         int minSize = Math.min(src.getWidth(), src.getHeight());
-        Bitmap output = Bitmap.createBitmap(src.getWidth(), src.getHeight(), Bitmap.Config.ARGB_8888);
-        Canvas canvas = new Canvas(output);
-        final Paint paint = new Paint(Paint.ANTI_ALIAS_FLAG);
+        Bitmap output = StitcherEngine.createBitmap(src.getWidth(), src.getHeight());
+        Canvas canvas = StitcherEngine.createCanvas(output);
+        final Paint paint = StitcherEngine.createPaint();
         final Rect destRect = new Rect(0, 0, src.getWidth(), src.getHeight());
 
         canvas.drawARGB(0, 0, 0, 0);
@@ -586,7 +588,49 @@ public class BitmapStitcher {
         return clipToSquare(output);
     }
 
+    /**
+     * 裁剪 Bitmap 带圆角
+     *
+     * @param src    源bitmap
+     * @param radius 圆角半径
+     * @return bitmap if null 出错
+     */
+    @Nullable
+    public static Bitmap clipToRound(Bitmap src, float radius) {
+        if (StitcherUtils.isEmptyBitmap(src)) {
+            return null;
+        }
+        if (radius <= 0) {
+            return clip(src, 0, 0, src.getWidth(), src.getHeight());
+        }
+        Bitmap output = StitcherEngine.createBitmap(src.getWidth(), src.getHeight());
+        Canvas canvas = StitcherEngine.createCanvas(output);
+        final Paint paint = StitcherEngine.createPaint();
+        final RectF destRect = new RectF(0, 0, src.getWidth(), src.getHeight());
+
+        canvas.drawARGB(0, 0, 0, 0);
+        try {
+            canvas.drawRoundRect(destRect, radius, radius, paint);
+            paint.setXfermode(new PorterDuffXfermode(PorterDuff.Mode.SRC_IN));
+            canvas.drawBitmap(src, null, destRect, paint);
+        } catch (Exception e) {
+            return null;
+        } finally {
+            if (!src.isRecycled() && src != output) {
+                src.recycle();
+            }
+        }
+        return output;
+    }
+
     /*
        ---------- clip bitmap area ----------
      */
+
+    /**
+     * 清除Bitmap复用缓存
+     */
+    public static void clearCache() {
+        ReusableCache.clearBitmap();
+    }
 }

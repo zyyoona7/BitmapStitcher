@@ -1,6 +1,7 @@
 package com.zyyoona7.stitcher.engine;
 
 import android.graphics.BitmapFactory;
+import android.view.View;
 
 import androidx.annotation.NonNull;
 
@@ -115,6 +116,7 @@ public class SizeEngine {
      * @param verticalSpacing 间距尺寸
      * @return 测量后的总宽高
      */
+    @NonNull
     public static StitchSize calculateVerticalSize(String filePath, int stitchCount,
                                                    int destWidth, int verticalSpacing) {
         if (stitchCount <= 0) {
@@ -136,6 +138,24 @@ public class SizeEngine {
         } catch (Exception e) {
             return new StitchSize(0, 0);
         }
+    }
+
+    public static StitchSize calculateVerticalSize(View view,int stitchCount,
+                                                   int destWidth, int verticalSpacing){
+        if (stitchCount<=0||view==null) {
+            return new StitchSize(0,0);
+        }
+        int width=view.getWidth();
+        int height=view.getHeight();
+        float ratio=height * 1f / width;
+
+        if (destWidth > 0) {
+            width = destWidth;
+            height = StitcherUtils.roundFloatToInt(width * ratio);
+        }
+
+        int totalHeight = height * stitchCount + verticalSpacing * (stitchCount - 1);
+        return new StitchSize(destWidth > 0 ? destWidth : width, totalHeight);
     }
 
     /**
@@ -233,6 +253,7 @@ public class SizeEngine {
      * @param horizontalSpacing 水平间距
      * @return 测量后的总宽高
      */
+    @NonNull
     public static StitchSize calculateHorizontalSize(String filePath, int stitchCount,
                                                      int destHeight, int horizontalSpacing) {
         if (stitchCount <= 0) {

@@ -5,6 +5,9 @@ package com.zyyoona7.stitcher.size;
  */
 public final class StitchSize {
 
+    //最大宽高尺寸，防止 OOM
+    private static final int MAX_SIZE=7000*7000;
+
     private final int mWidth;
     private final int mHeight;
 
@@ -24,5 +27,9 @@ public final class StitchSize {
 
     public boolean isEmpty() {
         return mWidth <= 0 || mHeight <= 0;
+    }
+
+    public boolean isOverMaxSize(){
+        return mWidth*mHeight>MAX_SIZE;
     }
 }
